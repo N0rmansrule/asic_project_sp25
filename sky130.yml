@@ -1,90 +1,117 @@
-# Technology Setup
-# Technology used is Sky130
-vlsi.core.technology: hammer.technology.sky130
+# Sky130 technology and tool setup for eecs151 ASIC project
+
+# --------------------------------------------------------------------
+# Technology plugin
+# --------------------------------------------------------------------
+vlsi.core.technology: "hammer.technology.sky130"
+
 technology.sky130:
-  sky130A: "/home/ff/eecs151/fa24/pdk/sky130A"  
-  sram22_sky130_macros: "/home/ff/eecs151/fa24/sky130_srams/sram22_sky130_macros"  
-  sky130_cds:    "/home/ff/eecs151/fa24/pdk/sky130_release_0.0.4"
+  # Sky130A open PDK root
+  sky130A: "/home/ff/eecs151/fa24/pdk/sky130A"
+
+  # SRAM macros used by the class
+  sram22_sky130_macros: "/home/ff/eecs151/fa24/sky130_srams/sram22_sky130_macros"
+
+  # Cadence tech files
+  sky130_cds: "/home/ff/eecs151/fa24/pdk/sky130_release_0.0.4"
+
+  # Sky130 SCL 9T stdcell library
   sky130_scl: "/home/ff/eecs151/fa24/pdk/sky130_scl_9T_0.0.5"
+
+  # Which stdcell library to use
   stdcell_library: "sky130_scl"
 
-# for sky130_scl
+# Which metal stack / routing config to use
 technology.core.stackup: "sky130_scl"
-# technology.core.stackup: "sky130_fd_sc_hd"
+# technology.core.stackup: "sky130_fd_sc_hd"  # alternative (not used in 151)
+
 vlsi.technology.placement_site: "CoreSite"
 vlsi.technology.routing_layers: [2, 5]
 
+# --------------------------------------------------------------------
+# General Hammer inputs
+# --------------------------------------------------------------------
 vlsi.core.max_threads: 4
-
-# General Hammer Inputs
 
 vlsi.inputs.supplies.VDD: "1.8 V"
 
-# Hammer will auto-generate a CPF for simple power designs; see hammer/src/hammer-vlsi/defaults.yml for more info
+# Simple power spec via auto-generated CPF
 vlsi.inputs.power_spec_mode: "auto"
 vlsi.inputs.power_spec_type: "cpf"
 
 vlsi.inputs.supplies.power: [
-  {name: "VDD", voltage: "1.8" , pins: ["vcc", "vdd", "VDD"]}
+  {name: "VDD", voltage: "1.8", pins: ["vcc", "vdd", "VDD"]}
 ]
 vlsi.inputs.supplies.ground: [
   {name: "VSS", pins: ["vss", "VSS"]}
 ]
 
-
-# Specify the setup and hold corners for Sky130
+# --------------------------------------------------------------------
+# MMMC corners for Sky130
+# --------------------------------------------------------------------
 vlsi.inputs.mmmc_corners: [
   {name: "ss_100C_1v60", type: "setup", voltage: "1.60 V", temp: "100 C"},
-  {name: "ff_n40C_1v95", type: "hold", voltage: "1.95 V", temp: "-40 C"}
+  {name: "ff_n40C_1v95", type: "hold",  voltage: "1.95 V", temp: "-40 C"}
 ]
 
-# SRAM Compiler compiler options
+# --------------------------------------------------------------------
+# SRAM generation (sky130 SRAM22)
+# --------------------------------------------------------------------
 vlsi.core.sram_generator_tool: "hammer.technology.sky130.sram_compiler"
-# Specify this since we are not using macrocompiler
-vlsi.inputs.sram_parameters: "/home/ff/eecs151/fa24/hammer/hammer/technology/sky130/sram-cache.json"  
+
+# Class-provided SRAM parameters (don’t change path)
+vlsi.inputs.sram_parameters: "/home/ff/eecs151/fa24/hammer/hammer/technology/sky130/sram-cache.json"
 vlsi.inputs.sram_parameters_meta: ["transclude", "json2list"]
 
-# Tool options. Replace with your tool plugin of choice.
-# Genus options
+# --------------------------------------------------------------------
+# Tool plugins (Genus / Innovus / Calibre / VCS / Voltus)
+# --------------------------------------------------------------------
+
+# Synthesis
 vlsi.core.synthesis_tool: "hammer.synthesis.genus"
 synthesis.genus.version: "221"
 synthesis.genus.genus_bin: "/share/instsww/cadence/DDI221/GENUS221/bin/genus"
 
-# Innovus options
+# Place and Route
 vlsi.core.par_tool: "hammer.par.innovus"
 par.innovus.version: "221"
 par.innovus.innovus_bin: "/share/instsww/cadence/DDI221/INNOVUS221/bin/innovus"
 par.innovus.design_flow_effort: "standard"
 par.inputs.gds_merge: true
 
-# Calibre options
+# DRC/LVS with Calibre
 vlsi.core.drc_tool: "hammer.drc.calibre"
 vlsi.core.lvs_tool: "hammer.lvs.calibre"
+
 drc.calibre.calibre_drc_bin: "/share/instsww/mgc/CALIBRE/bin/calibre"
 drc.calibre.calibredrv_bin: "/share/instsww/mgc/CALIBRE/bin/calibredrv"
 drc.calibre.MGC_HOME: "/shared/instsww/mgc"
+
 lvs.calibre.calibre_lvs_bin: "/share/instsww/mgc/CALIBRE/bin/calibre"
 lvs.calibre.calibredrv_bin: "/share/instsww/mgc/CALIBRE/bin/calibredrv"
 lvs.calibre.v2lvs_bin: "/share/instsww/mgc/CALIBRE/bin/v2lvs"
 lvs.calibre.MGC_HOME: "/shared/instsww/mgc"
 
-# VCS options
+# Simulation
 vlsi.core.sim_tool: "hammer.sim.vcs"
 sim.vcs.version: "P-2019.06"
 
-# Voltus options
+# Power analysis
 vlsi.core.power_tool: "hammer.power.voltus"
 power.voltus.version: "221"
 power.voltus.voltus_bin: "/share/instsww/cadence/SSV221/bin/voltus"
 
-# Generate Make include to aid in flow 
-vlsi.core.build_system: make
+# Build system
+vlsi.core.build_system: "make"
 
-# Power Straps
-par.power_straps_mode: generate
-par.generate_power_straps_method: by_tracks
+# --------------------------------------------------------------------
+# Power strap generation config
+# --------------------------------------------------------------------
+par.power_straps_mode: "generate"
+par.generate_power_straps_method: "by_tracks"
 par.blockage_spacing: 2.0
-par.blockage_spacing_top_layer: met3
+par.blockage_spacing_top_layer: "met3"
+
 par.generate_power_straps_options:
   by_tracks:
     strap_layers:
@@ -101,3 +128,4 @@ par.generate_power_straps_options:
     power_utilization: 0.2
     power_utilization_met2: 0.05
     power_utilization_met5: 0.5
+

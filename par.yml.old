@@ -1,0 +1,48 @@
+# Adams Bridge PAR (place-and-route) configuration for asic_project_sp25
+
+# --------------------------------------------------------------------
+# Placement Constraints (standard cells, SRAMs)
+# --------------------------------------------------------------------
+vlsi.inputs.placement_constraints:
+  - path: "abr_top"          # Must match synthesis.inputs.top_module
+    type: toplevel
+
+    # Floorplan margins (microns)
+    margins:
+      left: 0
+      right: 0
+      top: 0
+      bottom: 0
+
+    # Lower-left corner of the floorplan
+    x: 0
+    y: 0
+
+    # Floorplan dimensions (microns)
+    width: &FP_WIDTH 1800
+    height: 1800
+
+# --------------------------------------------------------------------
+# Pin placement constraints
+# --------------------------------------------------------------------
+# Let Innovus/Hammer auto-distribute pins on all sides to avoid
+# bottom-only congestion and unplaced pins.
+vlsi.inputs.pin_mode: generated
+vlsi.inputs.pin.generate_mode: full_auto
+vlsi.inputs.pin.assignments: []
+
+# --------------------------------------------------------------------
+# Power intent (matches sky130.yml, harmless duplicate)
+# --------------------------------------------------------------------
+vlsi.inputs.power_spec_mode: "auto"
+vlsi.inputs.power_spec_type: "cpf"
+
+# --------------------------------------------------------------------
+# Innovus options
+# --------------------------------------------------------------------
+# Clock Concurrent Optimization for CTS
+par.innovus.use_cco: true
+
+# If set to "auto", Innovus ignores placement_constraints and explores its own.
+# We want our own floorplan, so keep this commented.
+# par.innovus.floorplan_mode: "auto"
